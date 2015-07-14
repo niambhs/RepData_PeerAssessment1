@@ -1,25 +1,365 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "ActivityTrack"
+output: html_document
 ---
+This assignment will be described in multiple parts. You will need to write a report that answers the questions detailed below.
 
+1. Loading and preprocessing the data
+2. What is mean total number of steps taken per day?
+3. What is the average daily activity pattern?
+4. Imputing missing values
 
 ## Loading and preprocessing the data
+1.1 Using readCSV() load the data. 
 
 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  if (!require("knitr")) {
+   install.packages("knitr")
+  }
+  
+  if (!require("utils")) {
+   install.packages("utils")
+  }
+  require("knitr")
+  require("utils")
+  
+  df = read.csv(file="C:/Git/Mod_5_Ass_1/activity.csv", header=TRUE, sep=",")
+```
+
+1.2 Before we process the data, let us examine the data. Get a data summary
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  summary(df)
+```
+
+1.3 Display the internal structure of df
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  str(df)
+```
 
 ## What is mean total number of steps taken per day?
+2.1 Using aggregate, get the sum of steps in a given day
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+
+ if (!require("stats")) {
+   install.packages("stats")
+  }
+  require("stats")
+ #total number of steps per date
+ mdata <- aggregate(steps ~ date, data = df, sum)
+
+ head(mdata)
+
+ 
+```
+2.1.1 Get a Summary of the data
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+#summary(mdata)
+
+```
+
+2.2 Make a histogram of the total number of steps taken each day
+
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  
+  if (!require("ggplot2")) {
+    install.packages("ggplot2")
+  }
+  
+  require("ggplot2")
+  #plot data
+  a <- ggplot(data = mdata, aes(steps))
+  a <- a + xlab("Steps") + ggtitle("Histogram of the total number of steps taken each day") + geom_histogram()
+  
+  print(a)
+  
+
+ 
+```
+###Calculate and report the mean and median of the total number of steps taken per day
+3.1 Calculate the Mean of the total number of Steps Per day
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  mean(mdata$steps)
+```
+3.2 Calculate the Median of the total number of Steps Per day
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  median(mdata$steps)
+ 
+```
 
 
 
 ## What is the average daily activity pattern?
+4.1 Calculate the average number of steps for each interval.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+  #calculate average number of steps per interval
+  avstepsperinterval <- aggregate(steps ~ interval, data = df, mean)
+ 
+```
+
+4.2 Plot the time series graph.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  
+ if (!require("ggplot2")) {
+    install.packages("ggplot2")
+  }
+  #plot data
+  require("ggplot2")
+  a <- ggplot(data=avstepsperinterval, aes(x = strptime(sprintf("%04d", interval), format="%H%M"),steps))
+  a <- a + geom_line() +  scale_color_manual(values=c("#CC6666", "#9999CC"))
+  a <- a + xlab("Interval Time Slice") + ylab("Average Number of Steps") + ggtitle("Average daily activity pattern") 
+  print(a)
+ 
+```
+
+4.3 Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+4.3.1 Add the timesliced to it's own vector.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+  
+  #create the timeline interval
+  timeslicedInterval<-strptime(sprintf("%04d", avstepsperinterval$interval), format="%H%M")
+  head(timeslicedInterval)
+ 
+```
+
+4.3.2 Add the vector to the **avstepsperinterval** variable.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+    
+   #add the time sliced data to the avstepsperinterval variable
+   avstepsperinterval<-cbind(avstepsperinterval,timeslicedInterval)
+
+ 
+```
+
+
+4.3.3 Using Summary get the Max number of steps.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  
+  summary(avstepsperinterval)
+ 
+```
+
+*Max.   :2355.0   Max.   :206.170   Max.   :2015-07-12 23:55:00*
 
 
 
 ## Imputing missing values
+5.1 Calculate and report the total number of missing values in the dataset?
 
 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+  #count the number of NA's 
+  sum(is.na(df$steps))
+ 
+```
+5.2 Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. 
+
+When I looked at this I did 2 strategies, 
+1. I replaced NA's with 0.
+2. I replaced NA's with the mean of the Interval.
+*Strategy 1- Replace NA's with 0*
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  imputedmean<-df
+  #replace NA's with 0
+  imputedmean[is.na(imputedmean)] <- 0
+   
+```
+
+5.2.1 Inspect the new dataset **imputedmean**. 
+
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+  #inspect the data
+  head(imputedmean)
+
+  summary(imputedmean)
+ 
+```
+
+5.3 Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day.
+
+5.3.1 Using aggregate calculate the total number of steps each day
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  #Get the total number of steps
+  totalstepsperdays <- aggregate(steps ~ date, data = imputedmean, sum)
+ 
+```
+5.3.2 Inspect the data
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  head(totalstepsperdays)
+  
+  summary(totalstepsperdays)
+ 
+```
+
+5.3.2 Make a histogram of the total number of steps taken each day.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+ if (!require("ggplot2")) {
+    install.packages("ggplot2")
+  }
+  
+  require("ggplot2")
+  #plot the histogram
+  a <- ggplot(data = totalstepsperdays, aes(steps))
+  a <- a + xlab("Steps") + ggtitle("Histogram of the total number of steps taken each day") + geom_histogram()
+  
+  print(a)
+ 
+```
+
+5.4 What would the histogram look like if I used the mean of the intervals. 
+*Strategy 2 -Replace  NA's with the mean of the interval*
+
+5.4.1 Replace NA's with the Mean. 
+
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+  
+  #replace NA's with mean
+  imputedmean2<-df
+  for(i in 1:nrow(imputedmean2)) {
+    
+    if(is.na(imputedmean2$steps[i]))
+      #replace NA's with mean in avstepsperinterval$steps
+      imputedmean2$steps[i] <- avstepsperinterval$steps[i]
+  }
+
+  head(imputedmean2)
+
+```
+
+5.4.2 Get a new total using imputed data frame with mean. 
+
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+  #Get a new total using imputed data frame with mean
+  totalstepsperdays_with_mean_data <- aggregate(steps ~ date, data = imputedmean2, sum)
+  head(totalstepsperdays_with_mean_data)
+
+```
+
+5.4.3 Graph the imputed data with the mean.
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+ if (!require("ggplot2")) {
+    install.packages("ggplot2")
+  }
+  
+  require("ggplot2")
+  
+  #plot the histogram
+  a <- ggplot(data = totalstepsperdays_with_mean_data, aes(steps))
+  a <- a + xlab("Steps") + ggtitle("Histogram of the total number of steps taken each day") + geom_histogram()
+  
+  print(a)
+```
+
+5.3.3 Do these values differ from the estimates from the first part of the assignment?
+
+This was interesting, because this depends on what strategy you use. Orinaly I used the strategy where all NA's were replaced by 0. I did this, thinking it would have no affect on calculations. However, there was a change in the histogram, because now we have an increase in 0's. 
+
+I decided to look at the suggestion that was presented in the question, I chose the strategy of assigning all NA's the mean of the interval for the day. The graphs were the same. 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+6.1 Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day?
+
+
+6.1.1 Identify weekends.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  if (!require("timeDate")) {
+    install.packages("timeDate")
+  }
+  
+  require("timeDate")
+
+  #replace NA's with mean
+  fulldata<-df
+  for(i in 1:nrow(fulldata)) {
+    
+    if(is.na(fulldata$steps[i])){
+      #replace NA's with mean in avstepsperinterval$steps
+      fulldata$steps[i]<- avstepsperinterval$steps[i]
+    }
+  }
+  head(fulldata)
+  fulldata$isaweekend <-isWeekday(as.POSIXct(fulldata$date))
+  
+ #replace true and false with weekend or weekday
+ for(i in 1:nrow( fulldata)) {
+    
+    if(fulldata$isaweekend[i] ==FALSE){
+        #replace FALSE with weekday
+        fulldata$isaweekend[i] <- "weekday"
+      }else{
+         #replace TRUE with weekend
+        fulldata$isaweekend[i] <- "weekend"
+      }
+  }
+ 
+ 
+ 
+  
+```
+6.1.2 Find the mean steps per interval and weekday/weekend.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  
+  weekday_and_weekend_ave <-
+    aggregate(steps~ interval+ isaweekend, data=fulldata,FUN=mean)
+
+  weekday_and_weekend_ave$isaweekend <- as.factor(weekday_and_weekend_ave$isaweekend)
+  head(weekday_and_weekend_ave)
+
+  
+```
+6.1.3 Plot Graph.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  if (!require("ggplot2")) {
+   install.packages("ggplot2")
+  }
+  head(weekday_and_weekend_ave)
+  require("ggplot2")  
+  a <- ggplot(data=weekday_and_weekend_ave, aes(x = interval,
+                                                y = steps,
+                                                colour=isaweekend, 
+                                                group=isaweekend))
+  a <- a + geom_line() 
+  a <- a +facet_grid(.~isaweekend)
+  a <- a + xlab("Interval") + ylab("Steps") + ggtitle("Weekend Versus Weekday Activity") 
+  print(a)  
+  
+```

@@ -328,23 +328,38 @@ I decided to look at the suggestion that was presented in the question, I chose 
   }
  
  
-  weekday_and_weekend_ave <-aggregate(fulldata$steps, by=list(interval,isaweekend), 
-                            FUN=mean)
+ 
+  
+```
+6.1.2 Find the mean steps per interval and weekday/weekend.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
+
+  
+  weekday_and_weekend_ave <-
+    aggregate(steps~ interval+ isaweekend, data=fulldata,FUN=mean)
 
   weekday_and_weekend_ave$isaweekend <- as.factor(weekday_and_weekend_ave$isaweekend)
   head(weekday_and_weekend_ave)
+
   
+```
+6.1.3 Plot Graph.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}   
 
   if (!require("ggplot2")) {
    install.packages("ggplot2")
   }
-  
+  head(weekday_and_weekend_ave)
   require("ggplot2")  
-  a <- ggplot(data=weekday_and_weekend_ave, aes(x = interval, y = steps,colour=isaweekend, group=isaweekend))
+  a <- ggplot(data=weekday_and_weekend_ave, aes(x = interval,
+                                                y = steps,
+                                                colour=isaweekend, 
+                                                group=isaweekend))
   a <- a + geom_line() 
   a <- a +facet_grid(.~isaweekend)
-  a <- a + xlab("Interval") + ylab("Steps") + ggtitle("Weekend Versus Weekday activity") 
-  print(a)
-  
+  a <- a + xlab("Interval") + ylab("Steps") + ggtitle("Weekend Versus Weekday Activity") 
+  print(a)  
   
 ```
